@@ -47,9 +47,7 @@ class VectorStore(VectorControl):
         alpha=10, 
         beta=2, 
         steer_back=False, 
-        device='cpu', 
-        use_similarity_weight=False,
-        similarity_weight_vectors=None
+        device='cpu'
     ):
         super(VectorStore, self).__init__()
         self.step_store = self.get_empty_store()
@@ -61,11 +59,6 @@ class VectorStore(VectorControl):
         self.beta = beta
         self.steer_back = steer_back
         self.device = device
-        self.use_similarity_weight = use_similarity_weight  # Используем ли скалярное произведение как множитель
-        if similarity_weight_vectors is None:
-            self.similarity_weight_vectors = steering_vectors
-        else:
-            self.similarity_weight_vectors = similarity_weight_vectors
 
     def reset(self):
         super(VectorStore, self).reset()
@@ -98,7 +91,7 @@ class VectorStore(VectorControl):
                 # Вычисляем скалярное произведение (similarity) между векторами
                 sim = torch.tensordot(
                     vector, 
-                    self.similarity_weight_vectors,
+                    steering_vector,
                     dims=([2], [2])
                 ).view(vector.size()[0], vector.size()[1], 1)
 
@@ -108,23 +101,16 @@ class VectorStore(VectorControl):
                     sim_pos = torch.where(sim > 0, sim, 0)
                     vector = vector - (self.beta * sim_pos) * steering_vector.expand(1, vector.size()[1], -1)
                 else:
-                    # Управление вперёд (добавление понятия)
-                    if self.use_similarity_weight:
-                        # Используем скалярное произведение как множитель
-                        # Можно использовать abs() чтобы учитывать и отрицательные значения
-                        sim_abs = torch.abs(sim)
-                        vector = vector + (self.alpha * sim_abs) * steering_vector.expand(1, vector.size()[1], -1)
-                    else:
-                        # Стандартный вариант без скалярного произведения как множителя
-                        vector = vector + (self.alpha) * steering_vector.expand(1, vector.size()[1], -1)
-                
+                    # Стандартный вариант без скалярного произведения как множителя
+                    vector = vector + (self.alpha) * steering_vector.expand(1, vector.size()[1], -1)
+
                 # Ренормализация
                 vector = vector / torch.norm(vector, dim=2, keepdim=True)
                 vector = vector * norm
-            
+
         # Сохраняем активацию для дальнейшего вычисления векторов управления
         self.step_store[place_in_unet].append(vector.data.cpu().numpy()[len(vector)//2:].mean(axis=0).mean(axis=0))
-        
+
         return vector
 
     def between_steps(self):

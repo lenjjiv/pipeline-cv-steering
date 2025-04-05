@@ -18,17 +18,18 @@ def get_imagenet_classes(num=50):
 
 def get_prompts_concrete(num=50, concept_pos='Snoopy', concept_neg=None):
     """Генерация промптов с конкретными объектами"""
-    imagenet_classes = get_imagenet_classes(num)
-    prompts_pos = []
-    prompts_neg = []
-    for cls in imagenet_classes[:num]:
-        prompts_pos.append(cls+' with {}'.format(concept_pos))
-        if concept_neg is not None:
-            prompts_neg.append(cls+' with {}'.format(concept_neg))
-        else:
-            prompts_neg.append(cls)
+    # imagenet_classes = get_imagenet_classes(num)
+    # prompts_pos = []
+    # prompts_neg = []
+    # for cls in imagenet_classes[:num]:
+    #     prompts_pos.append(cls+' with {}'.format(concept_pos))
+    #     if concept_neg is not None:
+    #         prompts_neg.append(cls+' with {}'.format(concept_neg))
+    #     else:
+    #         prompts_neg.append(cls)
 
-    return prompts_pos, prompts_neg
+    from prompts import prompts_pos, prompts_neg
+    return prompts_pos[:num], prompts_neg[:num]
 
 
 def get_prompts_style(num=50, concept_pos='anime', concept_neg=None):

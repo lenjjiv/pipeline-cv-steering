@@ -21,19 +21,19 @@ def compute_steering_vectors(
 ):
     """
     Вычисляет управляющие векторы для указанной модели и концепции
-    
+
     Возвращает словарь векторов управления
     """
-    print(f"Вычисляем управляющие векторы: модель={model_name}, режим={mode}, концепция={concept_pos}")
-    
+    print(f"Вычисляем управляющие векторы: модель={model_name}, режим={mode}...")
+
     # Загружаем модель
     pipe, device = load_model(model_name)
-    
+
     # Формируем промпты
     if mode == 'concrete':
         prompts_pos, prompts_neg = get_prompts_concrete(
-            num=max_prompts, 
-            concept_pos=concept_pos, 
+            num=max_prompts,
+            concept_pos=concept_pos,
             concept_neg=concept_neg
         )
     elif mode == 'human-related':
@@ -46,8 +46,8 @@ def compute_steering_vectors(
 
     elif mode == 'style':
         prompts_pos, prompts_neg = get_prompts_style(
-            num=max_prompts, 
-            concept_pos=concept_pos, 
+            num=max_prompts,
+            concept_pos=concept_pos,
             concept_neg=concept_neg
         )
     else:

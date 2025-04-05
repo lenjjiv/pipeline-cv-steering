@@ -15,8 +15,6 @@ def generate_image(
     steer_back=False,
     not_steer=False,
     num_denoising_steps=50,
-    use_similarity_weight=False,
-    similarity_weight_vectors=None
 ):
     """
     Генерирует изображение с использованием указанной модели и векторов управления
@@ -25,9 +23,6 @@ def generate_image(
     """
     # Загружаем модель
     pipe, device = load_model(model_name)
-
-    if similarity_weight_vectors is None:
-        similarity_weight_vectors = steering_vectors
     
     # Проверяем, что число шагов соответствует доступным векторам
     if steering_vectors is not None and not not_steer:
@@ -46,9 +41,7 @@ def generate_image(
 
         controller = VectorStore(
             steering_vectors, 
-            device=device, 
-            use_similarity_weight=use_similarity_weight,
-            similarity_weight_vectors=similarity_weight_vectors
+            device=device,
         )
         controller.steer_only_up = steer_only_up
 
@@ -59,10 +52,6 @@ def generate_image(
         else:
             controller.steer_back = False
             controller.alpha = alpha
-            if use_similarity_weight:
-                print(f"Режим добавления концепции с весом сходства (alpha={alpha})")
-            else:
-                print(f"Режим добавления концепции (alpha={alpha})")
 
         register_vector_control(pipe.unet, controller)
         image = run_model(model_name, pipe, prompt, seed, num_denoising_steps, device)
@@ -74,7 +63,7 @@ def compare_original_vs_steered(
     prompt="a girl with a kitty",
     seed=0,
     steering_vectors=None,
-    alpha=10,
+    alpha=5,
     beta=2,
     steer_back=False,
     model_name="sd14",
